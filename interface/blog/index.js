@@ -17,14 +17,20 @@ router.post(partName + "/register", async ctx => {
     return;
   }
   try {
-    const result = await DB.sqlQuery("SELECT * FROM `user` WHERE `email` = ?", [email]); /* 查 */
+    const result = await DB.sqlQuery("SELECT * FROM `user` WHERE `email` = ?", [
+      email
+    ]); /* 查 */
     if (result.length !== 0) {
       ctx.body = { code: status.PARAMS_B, msg: "此邮箱已注册！" };
       return;
     }
     try {
       const hashPassword = await bcrypt.hash(password, saltRounds);
-      await DB.sqlQuery("INSERT INTO user SET ?", { nickname, email, password: hashPassword }); /* 增 */
+      await DB.sqlQuery("INSERT INTO user SET ?", {
+        nickname,
+        email,
+        password: hashPassword
+      }); /* 增 */
       ctx.body = { code: status.SUCCESS, msg: "注册成功！" };
     } catch (error) {
       console.log(error);
@@ -39,7 +45,9 @@ router.post(partName + "/login", async ctx => {
   const body = ctx.request.body;
   console.log("-----body----", body);
   const { email, password } = body;
-  const result = await DB.sqlQuery("SELECT * FROM `user` WHERE `email` = ?", [email]);
+  const result = await DB.sqlQuery("SELECT * FROM `user` WHERE `email` = ?", [
+    email
+  ]);
   if (result.length === 0) {
     ctx.body = { code: status.PARAMS_B, msg: "用户不存在！" };
     return;
@@ -48,9 +56,20 @@ router.post(partName + "/login", async ctx => {
   if (match) {
     try {
       /* jwt.sign("规则", "加密名字", "过期时间", "箭头函数") */
-      const rule = { user_id: result[0].user_id, nickname: result[0].nickname, email: result[0].email };
-      const token = await jwt.sign(rule, Auth.secretOrPrivateKey, { expiresIn: "1h" });
-      ctx.body = { code: status.SUCCESS, msg: "登录成功！", token: "Bearer " + token, data: result[0] };
+      const rule = {
+        user_id: result[0].user_id,
+        nickname: result[0].nickname,
+        email: result[0].email
+      };
+      const token = await jwt.sign(rule, Auth.secretOrPrivateKey, {
+        expiresIn: "1h"
+      });
+      ctx.body = {
+        code: status.SUCCESS,
+        msg: "登录成功！",
+        token: "Bearer " + token,
+        data: result[0]
+      };
     } catch (error) {
       ctx.body = { code: status.NO_AUTH_A, msg: "token 生成失败！" };
     }
@@ -61,7 +80,10 @@ router.post(partName + "/login", async ctx => {
 
 router.post(partName + "/addTag", async ctx => {
   const body = ctx.request.body;
-  const promise = DB.sqlQuery("INSERT INTO tag SET ?", { ...body, createTime: new Date().toLocaleString() });
+  const promise = DB.sqlQuery("INSERT INTO tag SET ?", {
+    ...body,
+    createTime: new Date().toLocaleString()
+  });
   const [err, data] = await Utils.awaitWrap(promise);
   if (!err) {
     ctx.body = { code: status.SUCCESS, msg: "添加成功" };
@@ -74,7 +96,10 @@ router.post(partName + "/addTag", async ctx => {
 router.get(partName + "/getTags", async ctx => {
   const pageSize = 1;
   const pageNum = 10;
-  const promise = DB.sqlQuery("SELECT * FROM `tag` limit ?,?", [(pageSize - 1) * pageNum, pageNum]); /* 分页查 */
+  const promise = DB.sqlQuery("SELECT * FROM `tag` limit ?,?", [
+    (pageSize - 1) * pageNum,
+    pageNum
+  ]); /* 分页查 */
   const [err, data] = await Utils.awaitWrap(promise);
   if (!err) {
     ctx.body = { code: status.SUCCESS, data: data };
@@ -85,7 +110,9 @@ router.get(partName + "/getTags", async ctx => {
 });
 
 router.del(partName + "/delTag", async ctx => {
-  const promise = DB.sqlQuery("DELETE FROM `tag` WHERE `id` = ?", [ctx.query.id]); /* 删 */
+  const promise = DB.sqlQuery("DELETE FROM `tag` WHERE `id` = ?", [
+    ctx.query.id
+  ]); /* 删 */
   const [err, data] = await Utils.awaitWrap(promise);
   if (!err) {
     ctx.body = { code: status.SUCCESS, msg: "删除成功" };
@@ -97,7 +124,10 @@ router.del(partName + "/delTag", async ctx => {
 
 router.put(partName + "/putTag", async ctx => {
   const { name, id } = ctx.request.body;
-  const promise = DB.sqlQuery("UPDATE `tag` SET `name` = ? WHERE `id` = ?", [name, id]); /* 改 */
+  const promise = DB.sqlQuery("UPDATE `tag` SET `name` = ? WHERE `id` = ?", [
+    name,
+    id
+  ]); /* 改 */
   const [err, data] = await Utils.awaitWrap(promise);
   if (!err) {
     ctx.body = { code: status.SUCCESS, msg: "更改成功" };
@@ -109,7 +139,10 @@ router.put(partName + "/putTag", async ctx => {
 
 router.post(partName + "/addCatagory", async ctx => {
   const body = ctx.request.body;
-  const promise = DB.sqlQuery("INSERT INTO catagory SET ?", { ...body, createTime: new Date().toLocaleString() });
+  const promise = DB.sqlQuery("INSERT INTO catagory SET ?", {
+    ...body,
+    createTime: new Date().toLocaleString()
+  });
   const [err, data] = await Utils.awaitWrap(promise);
   if (!err) {
     ctx.body = { code: status.SUCCESS, msg: "添加成功" };
@@ -122,7 +155,10 @@ router.post(partName + "/addCatagory", async ctx => {
 router.get(partName + "/getCatagorys", async ctx => {
   const pageSize = 1;
   const pageNum = 10;
-  const promise = DB.sqlQuery("SELECT * FROM `catagory` limit ?,?", [(pageSize - 1) * pageNum, pageNum]); /* 分页查 */
+  const promise = DB.sqlQuery("SELECT * FROM `catagory` limit ?,?", [
+    (pageSize - 1) * pageNum,
+    pageNum
+  ]); /* 分页查 */
   const [err, data] = await Utils.awaitWrap(promise);
   if (!err) {
     ctx.body = { code: status.SUCCESS, data: data };
@@ -133,7 +169,9 @@ router.get(partName + "/getCatagorys", async ctx => {
 });
 
 router.del(partName + "/delCatagory", async ctx => {
-  const promise = DB.sqlQuery("DELETE FROM `catagory` WHERE `id` = ?", [ctx.query.id]); /* 删 */
+  const promise = DB.sqlQuery("DELETE FROM `catagory` WHERE `id` = ?", [
+    ctx.query.id
+  ]); /* 删 */
   const [err, data] = await Utils.awaitWrap(promise);
   if (!err) {
     ctx.body = { code: status.SUCCESS, msg: "删除成功" };
@@ -145,7 +183,10 @@ router.del(partName + "/delCatagory", async ctx => {
 
 router.put(partName + "/putCatagory", async ctx => {
   const { name, id } = ctx.request.body;
-  const promise = DB.sqlQuery("UPDATE `catagory` SET `name` = ? WHERE `id` = ?", [name, id]); /* 改 */
+  const promise = DB.sqlQuery(
+    "UPDATE `catagory` SET `name` = ? WHERE `id` = ?",
+    [name, id]
+  ); /* 改 */
   const [err, data] = await Utils.awaitWrap(promise);
   if (!err) {
     ctx.body = { code: status.SUCCESS, msg: "更改成功" };
@@ -157,7 +198,10 @@ router.put(partName + "/putCatagory", async ctx => {
 
 router.post(partName + "/addArticle", async ctx => {
   const body = ctx.request.body;
-  const promise = DB.sqlQuery("INSERT INTO article SET ?", { ...body, createTime: new Date().toLocaleString() });
+  const promise = DB.sqlQuery("INSERT INTO article SET ?", {
+    ...body,
+    createTime: new Date().toLocaleString()
+  });
   const [err, data] = await Utils.awaitWrap(promise);
   if (!err) {
     ctx.body = { code: status.SUCCESS, msg: "发布成功" };
@@ -171,9 +215,13 @@ router.get(partName + "/getArticles", async ctx => {
   const { pageSize, pageNum, catagory } = ctx.query;
   let _sql;
   if (catagory) {
-    _sql = `SELECT * FROM article WHERE catagory = ? limit ${(pageNum - 1) * pageSize},${pageSize}`; /* 分页查 */
+    _sql =
+      "SELECT * FROM article WHERE catagory = ? limit " +
+      (pageNum - 1) +
+      "," +
+      pageSize;
   } else {
-    _sql = `SELECT * FROM article limit ${(pageNum - 1) * pageSize},${pageSize}`; /* 分页查 */
+    _sql = "SELECT * FROM article limit " + (pageNum - 1) + "," + pageSize;
   }
   const promise = DB.sqlQuery(_sql, [catagory]);
   const [err, data] = await Utils.awaitWrap(promise);
@@ -185,38 +233,58 @@ router.get(partName + "/getArticles", async ctx => {
       let tagName = [];
       if (!catagory) {
         if (!tag) {
-          res.push({ ...data[i], catagoryName: catagoryName, tagName: tagName });
+          res.push({
+            ...data[i],
+            catagoryName: catagoryName,
+            tagName: tagName
+          });
         } else {
           for (let t = 0, len = tag.length; t < len; t++) {
-            const sql2 = DB.sqlQuery("SELECT * FROM `tag` WHERE id = ?", [+tag[t]]);
+            const sql2 = DB.sqlQuery("SELECT * FROM `tag` WHERE id = ?", [
+              +tag[t]
+            ]);
             const [err2, data2] = await Utils.awaitWrap(sql2);
             if (err2) {
               ctx.body = { code: status.SQL_ERR, msg: "生成分类名称失败" };
               return;
             } else {
               tagName.push(data2[0].name);
-              res.push({ ...data[i], catagoryName: catagoryName, tagName: tagName });
+              res.push({
+                ...data[i],
+                catagoryName: catagoryName,
+                tagName: tagName
+              });
             }
           }
         }
       } else {
-        for (let c = 0, len = catagory.length; c < len; c++) {
-          const sql1 = DB.sqlQuery("SELECT * FROM `catagory` WHERE id = ?", [+catagory[c]]);
+        let catagorySplit = catagory.split(",");
+        for (let c = 0, len = catagorySplit.length; c < len; c++) {
+          const sql1 = DB.sqlQuery("SELECT * FROM `catagory` WHERE id = ?", [
+            +catagorySplit[c]
+          ]);
           const [err1, data1] = await Utils.awaitWrap(sql1);
           if (err1) {
             ctx.body = { code: status.SQL_ERR, msg: "生成分类名称失败" };
             return;
           } else {
             catagoryName.push(data1[0].name);
-            for (let t = 0, len = tag.length; t < len; t++) {
-              const sql2 = DB.sqlQuery("SELECT * FROM `tag` WHERE id = ?", [+tag[t]]);
+            let tagSplit = tag.split(",");
+            for (let t = 0, len = tagSplit.length; t < len; t++) {
+              const sql2 = DB.sqlQuery("SELECT * FROM `tag` WHERE id = ?", [
+                +tagSplit[t]
+              ]);
               const [err2, data2] = await Utils.awaitWrap(sql2);
               if (err2) {
                 ctx.body = { code: status.SQL_ERR, msg: "生成分类名称失败" };
                 return;
               } else {
                 tagName.push(data2[0].name);
-                res.push({ ...data[i], catagoryName: catagoryName, tagName: tagName });
+                res.push({
+                  ...data[i],
+                  catagoryName: catagoryName,
+                  tagName: tagName
+                });
               }
             }
           }
@@ -225,7 +293,7 @@ router.get(partName + "/getArticles", async ctx => {
     }
     ctx.body = { code: status.SUCCESS, data: res };
   } else {
-    console.log(err);
+    console.log("2", err);
     ctx.body = { code: status.SQL_ERR, msg: "查询失败" };
   }
 });
@@ -245,7 +313,9 @@ router.get(partName + "/getArticleDetail", async ctx => {
 });
 
 router.del(partName + "/delArticle", async ctx => {
-  const promise = DB.sqlQuery("DELETE FROM `article` WHERE `id` = ?", [ctx.query.id]); /* 删 */
+  const promise = DB.sqlQuery("DELETE FROM `article` WHERE `id` = ?", [
+    ctx.query.id
+  ]); /* 删 */
   const [err, data] = await Utils.awaitWrap(promise);
   if (!err) {
     ctx.body = { code: status.SUCCESS, msg: "删除成功" };
@@ -257,9 +327,26 @@ router.del(partName + "/delArticle", async ctx => {
 
 router.put(partName + "/putArticle", async ctx => {
   console.log(ctx.request.body);
-  const { title, renderHtml, mdValue, tag, catagory, publicStatus, id } = ctx.request.body;
-  const _sql = "UPDATE `article` SET `title` = ?,`renderHtml` = ?,`mdValue` = ?,`tag` = ?,`catagory` = ?,`publicStatus` = ? WHERE `id` = ?";
-  const promise = DB.sqlQuery(_sql, [title, renderHtml, mdValue, tag, catagory, publicStatus, id]); /* 改 */
+  const {
+    title,
+    renderHtml,
+    mdValue,
+    tag,
+    catagory,
+    publicStatus,
+    id
+  } = ctx.request.body;
+  const _sql =
+    "UPDATE `article` SET `title` = ?,`renderHtml` = ?,`mdValue` = ?,`tag` = ?,`catagory` = ?,`publicStatus` = ? WHERE `id` = ?";
+  const promise = DB.sqlQuery(_sql, [
+    title,
+    renderHtml,
+    mdValue,
+    tag,
+    catagory,
+    publicStatus,
+    id
+  ]); /* 改 */
   const [err, data] = await Utils.awaitWrap(promise);
   if (!err) {
     ctx.body = { code: status.SUCCESS, msg: "更改成功" };
